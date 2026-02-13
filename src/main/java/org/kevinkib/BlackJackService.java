@@ -7,8 +7,6 @@ import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.h2.jdbcx.JdbcDataSource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -17,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class BlackJackService {
@@ -221,15 +218,15 @@ public class BlackJackService {
     }
 
     public void loadGame(Long gameId) {
-        GameDB gameDB = jdbcTemplate.queryForObject("SELECT * FROM GAME WHERE GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new GameDB(
+        GameEntity gameDB = jdbcTemplate.queryForObject("SELECT * FROM GAME WHERE GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new GameEntity(
                         rs.getLong("GAME_ID"),
                         rs.getDate("GAME_CREATION_DATE"),
                         rs.getString("GAME_STATE")
                 ));
 
-        List<PileDB> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME = ?", new Object[]{gameId},
-                (rs, rowNum) -> new PileDB(
+        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME = ?", new Object[]{gameId},
+                (rs, rowNum) -> new PileEntity(
                         rs.getLong("PILE_ID"),
                         rs.getInt("PILE_PLAYER_ID"),
                         rs.getInt("PILE_CARD_RANK"),
@@ -247,17 +244,17 @@ public class BlackJackService {
         gameState = GameState.from(gameDB.state());
         playerCards = new ArrayList<>();
         dealerCards = new ArrayList<>();
-        for (PileDB pileDB : pilesDB) {
-            if (pileDB.playerId() == 0L) {
+        for (PileEntity pileEntity : pilesDB) {
+            if (pileEntity.playerId() == 0L) {
                 dealerCards.add(new Card(
-                        FrenchRank.fromStrength(pileDB.cardRank()),
-                        FrenchSuit.from(pileDB.cardColor())
+                        FrenchRank.fromStrength(pileEntity.cardRank()),
+                        FrenchSuit.from(pileEntity.cardColor())
                 ));
             }
             else {
                 playerCards.add(new Card(
-                        FrenchRank.fromStrength(pileDB.cardRank()),
-                        FrenchSuit.from(pileDB.cardColor())
+                        FrenchRank.fromStrength(pileEntity.cardRank()),
+                        FrenchSuit.from(pileEntity.cardColor())
                 ));
             }
         }
