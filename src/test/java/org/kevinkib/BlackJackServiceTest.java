@@ -260,4 +260,33 @@ class BlackJackServiceTest {
         assertThat(state, is(GameState.WIN));
     }
 
+    @Test
+    public void givenGame_thenAcesAreCalculatedCorrectly() {
+        frenchDeckFactory = new FrenchDeckFactoryFake(aDeck()
+                .withCards(new LinkedList<>(Arrays.asList(
+                        aCardWithASuit().withRank(FrenchRank.EIGHT).build(),
+                        aCardWithASuit().withRank(FrenchRank.EIGHT).build(),
+                        aCardWithASuit().withRank(FrenchRank.TWO).build(),
+                        aCardWithASuit().withRank(FrenchRank.THREE).build(),
+                        aCardWithASuit().withRank(FrenchRank.ACE).build(),
+                        aCardWithASuit().withRank(FrenchRank.ACE).build()
+                ))).buildWithoutRandom()
+        );
+
+        blackJackService = new BlackJackService(frenchDeckFactory);
+
+        blackJackService.createGame();
+        assertThat(blackJackService.getPlayerScore(), is(8));
+        assertThat(blackJackService.getDealerScore(), is(8));
+
+        blackJackService.hit();
+        assertThat(blackJackService.getPlayerScore(), is(10));
+        assertThat(blackJackService.getDealerScore(), is(11));
+
+        GameState state = blackJackService.hit();
+        assertThat(blackJackService.getPlayerScore(), is(21));
+        assertThat(blackJackService.getDealerScore(), is(12));
+        assertThat(state, is(GameState.WIN));
+    }
+
 }

@@ -203,11 +203,18 @@ public class BlackJackService {
     private int sumCards(List<Card> cards) {
         int sum = 0;
         for (var card : cards) {
-            if (FrenchRank.ACE.equals(card.getRank())) {
-                sum += 11;
-            }
-            else {
+            if (!FrenchRank.ACE.equals(card.getRank())) {
                 sum += ((FrenchRank)card.getRank()).getValue();
+            }
+        }
+        for (var card : cards) {
+            if (FrenchRank.ACE.equals(card.getRank())) {
+                if (sum + 11 > 21) {
+                    sum += 1;
+                }
+                else {
+                    sum += 11;
+                }
             }
         }
         return sum;
