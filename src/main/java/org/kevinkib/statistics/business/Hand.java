@@ -19,7 +19,7 @@ public record Hand(List<Rank> ranks) {
 
     public Hand add(Rank rank) {
 
-        List<Rank> newRanks = new ArrayList<>();
+        List<Rank> newRanks = new ArrayList<>(this.ranks);
         newRanks.add(rank);
 
         return new Hand(newRanks);

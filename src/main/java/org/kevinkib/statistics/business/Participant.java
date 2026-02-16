@@ -1,4 +1,6 @@
 package org.kevinkib.statistics.business;
 
-public record Participant(Role role, Hand hand) {
+import java.util.List;
+
+public record Participant(Role role, Hand hand, List<ParticipantTurn> turns) {
 }
