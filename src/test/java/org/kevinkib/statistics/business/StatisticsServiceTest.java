@@ -1,6 +1,7 @@
 package org.kevinkib.statistics.business;
 
 import org.junit.jupiter.api.Test;
+import org.kevinkib.statistics.business.model.*;
 
 import java.util.List;
 
@@ -10,7 +11,6 @@ import static org.hamcrest.junit.MatcherAssert.assertThat;
 class StatisticsServiceTest {
 
     public static StatisticsService statsService = new StatisticsService();
-
 
     private Game game(Long id, Hand playerHand, Hand dealerHand, GameResult result) {
         return new Game(

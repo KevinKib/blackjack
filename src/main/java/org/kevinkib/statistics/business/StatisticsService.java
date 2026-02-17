@@ -1,5 +1,9 @@
 package org.kevinkib.statistics.business;
 
+import org.kevinkib.statistics.business.model.Game;
+import org.kevinkib.statistics.business.model.GameResult;
+import org.kevinkib.statistics.business.model.Statistics;
+
 import java.util.List;
 
 public class StatisticsService {
@@ -51,7 +55,5 @@ public class StatisticsService {
         */
         return 0.0;
     }
-
-
 
 }

@@ -1,4 +1,4 @@
-package org.kevinkib.statistics.business;
+package org.kevinkib.statistics.business.model;
 
 import java.util.List;
 

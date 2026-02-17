@@ -6,6 +6,7 @@ import org.kevinkib.cards.domain.DeckType;
 import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
+import org.kevinkib.statistics.presentation.ActionInternalController;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -34,8 +35,11 @@ public class BlackJackService {
     private List<Card> playerCards;
     private List<Card> dealerCards;
 
+    private final ActionInternalController actionInternalController;
+
     public BlackJackService(FrenchDeckFactory deckFactory) {
         this.deckFactory = deckFactory;
+        this.actionInternalController = new ActionInternalController(null);
 
         this.jdbcTemplate = new JdbcTemplate(getDataSource());
     }
@@ -164,6 +168,9 @@ public class BlackJackService {
         Card cardDrawn = playerCards.get(playerCards.size()-1);
         logger.write("Player drawed "+cardDrawn.getRank()+". Score: "+sumCards(playerCards));
         saveMoveInDatabase(false, cardDrawn);
+
+        actionInternalController.hit(gameId, 1L);
+
         return drawed;
     }
 
@@ -172,12 +179,15 @@ public class BlackJackService {
         Card cardDrawn = dealerCards.get(dealerCards.size()-1);
         logger.write("Dealer drawed "+cardDrawn.getRank()+". Score: "+sumCards(dealerCards));
         saveMoveInDatabase(true, cardDrawn);
+
+        actionInternalController.hit(gameId, 0L);
+
         return drawed;
     }
 
     private void saveMoveInDatabase(boolean isDealer, Card cardDrawn) {
         jdbcTemplate.update(
-                "INSERT INTO PILE(PILE_FK_GAME, PILE_PLAYER_ID, PILE_CARD_RANK, PILE_CARD_COLOR) " +
+                "INSERT INTO PILE(PILE_FK_GAME_ID, PILE_PLAYER_ID, PILE_CARD_RANK, PILE_CARD_COLOR) " +
                         "VALUES(?,?,?,?);",
                 gameId,
                 isDealer ? 0 : 1,
@@ -225,7 +235,7 @@ public class BlackJackService {
                         rs.getString("GAME_STATE")
                 ));
 
-        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME = ?", new Object[]{gameId},
+        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
                 (rs, rowNum) -> new PileEntity(
                         rs.getLong("PILE_ID"),
                         rs.getInt("PILE_PLAYER_ID"),
