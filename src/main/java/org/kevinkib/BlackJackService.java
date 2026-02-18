@@ -169,7 +169,7 @@ public class BlackJackService {
         logger.write("Player drawed "+cardDrawn.getRank()+". Score: "+sumCards(playerCards));
         saveMoveInDatabase(false, cardDrawn);
 
-        actionInternalController.hit(gameId, 1L);
+//        actionInternalController.hit(gameId, 1L);
 
         return drawed;
     }
@@ -180,7 +180,7 @@ public class BlackJackService {
         logger.write("Dealer drawed "+cardDrawn.getRank()+". Score: "+sumCards(dealerCards));
         saveMoveInDatabase(true, cardDrawn);
 
-        actionInternalController.hit(gameId, 0L);
+//        actionInternalController.hit(gameId, 0L);
 
         return drawed;
     }

@@ -38,7 +38,7 @@ public record Hand(List<Rank> ranks) {
         int lowAces = 0;
 
         while(score > MAX_HAND_VALUE && lowAces < numberOfAces) {
-            score -= 10;
+            score -= (Rank.ACE.value() - ACE_LOW_VALUE);
             ++lowAces;
         }
 
