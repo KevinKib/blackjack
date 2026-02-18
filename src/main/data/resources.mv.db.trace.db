@@ -1,0 +1,48 @@
+2026-02-12 00:21:43.928904+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, null, ONGOING); [42104-240]
+2026-02-12 00:22:03.957576+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, null, 'ONGOING'); [42104-240]
+2026-02-12 00:23:08.500308+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.769663+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.830198+01:00 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.839196+01:00 jdbc[5]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.848196+01:00 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.862195+01:00 jdbc[7]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.870196+01:00 jdbc[9]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-12 20:20:52.877201+01:00 jdbc[10]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-13 16:30:42.119819+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(1, 2026-02-12, 'ONGOING'); [42104-240]
+2026-02-13 17:00:26.123418+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME VALUES(GAME_ID, GAME_CREATION_DATE, GAME_STATE); [42104-240]
+2026-02-13 17:01:11.811343+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME(GAME_ID, GAME_CREATION_DATE, GAME_STATE) VALUES(?,?,?) [42104-240]
+2026-02-13 17:06:18.327473+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME(GAME_ID, GAME_CREATION_DATE, GAME_STATE) VALUES(?,?,?) [42104-240]
+2026-02-13 17:15:52.651521+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME(GAME_ID, GAME_CREATION_DATE, GAME_STATE) VALUES(?,?,?) [42104-240]
+2026-02-13 17:17:17.159476+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "GAME" not found (this database is empty); SQL statement:
+INSERT INTO GAME(GAME_ID, GAME_CREATION_DATE, GAME_STATE) VALUES(?,?,?) [42104-240]

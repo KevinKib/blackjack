@@ -1,9 +1,9 @@
 package org.kevinkib;
 
-import org.kevinkib.cards.domain.Card;
+import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        new BlackJackService(new FrenchDeckFactory()).startGUI();
     }
 }
