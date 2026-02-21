@@ -1,6 +1,8 @@
 package org.kevinkib.statistics.business;
 
 import org.kevinkib.statistics.business.model.Game;
+import org.kevinkib.statistics.business.model.StatisticsCalculator;
+import org.kevinkib.statistics.business.model.StatisticsReport;
 import org.kevinkib.statistics.business.port.GameRepository;
 
 import java.util.List;
@@ -13,9 +15,9 @@ public class StatisticsService {
         this.gameRepository = gameRepository;
     }
 
-    public Integer getTotalNumberOfGames() {
+    public StatisticsReport getStatisticsReport() {
         List<Game> games = gameRepository.getGames();
-        return games.size();
+        return new StatisticsCalculator().getStatisticsReport(games);
     }
 
 }

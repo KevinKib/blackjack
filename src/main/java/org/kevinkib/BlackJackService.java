@@ -323,7 +323,7 @@ public class BlackJackService {
             System.out.println();
 
             List<GameEntity> gameDBs = getGameList();
-            System.out.println(" Number of games played : "+statistics.getTotalNumberOfGames());
+            System.out.println(" Number of games played : "+statistics.getStatisticsReport());
 
             if (!gameDBs.isEmpty()) {
                 Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();

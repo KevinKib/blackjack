@@ -47,7 +47,7 @@ public class StatisticsInternalControllerIT {
             createGameInDatabase(date, GameState.WIN);
         }
 
-        int nbGames = statisticsInternalController.getTotalNumberOfGames();
+        int nbGames = statisticsInternalController.getStatisticsReport().nbGames();
 
         assertThat(nbGames, is(expectedNumberOfGames));
     }
