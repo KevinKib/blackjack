@@ -1,6 +1,7 @@
 package org.kevinkib.statistics.presentation.v1;
 
 import org.kevinkib.statistics.business.StatisticsService;
+import org.kevinkib.statistics.presentation.v1.dto.StatisticsReportDto;
 
 public class StatisticsInternalController {
 
@@ -10,8 +11,8 @@ public class StatisticsInternalController {
         this.service = service;
     }
 
-    public Integer getTotalNumberOfGames() {
-        return service.getTotalNumberOfGames();
+    public StatisticsReportDto getStatisticsReport() {
+        return null;
     }
 
 }
