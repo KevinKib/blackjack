@@ -6,6 +6,8 @@ import org.kevinkib.cards.domain.DeckType;
 import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
+import org.kevinkib.config.AppConfig;
+import org.kevinkib.statistics.presentation.v1.StatisticsInternalController;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -37,6 +39,8 @@ public class BlackJackService {
 
     private List<Card> playerCards;
     private List<Card> dealerCards;
+
+    private final StatisticsInternalController statistics = new AppConfig().statisticsInternalController();
 
     public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory) {
         this.deckFactory = deckFactory;
@@ -319,7 +323,7 @@ public class BlackJackService {
             System.out.println();
 
             List<GameEntity> gameDBs = getGameList();
-            System.out.println(" Number of games played : "+gameDBs.size());
+            System.out.println(" Number of games played : "+statistics.getTotalNumberOfGames());
 
             if (!gameDBs.isEmpty()) {
                 Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();
