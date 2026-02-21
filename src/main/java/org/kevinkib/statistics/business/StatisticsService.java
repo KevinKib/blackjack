@@ -1,6 +1,7 @@
 package org.kevinkib.statistics.business;
 
 import org.kevinkib.statistics.business.model.Game;
+import org.kevinkib.statistics.business.model.GameOutcome;
 import org.kevinkib.statistics.business.port.GameRepository;
 
 import java.util.List;
@@ -13,9 +14,20 @@ public class StatisticsService {
         this.gameRepository = gameRepository;
     }
 
-    public Integer getTotalNumberOfGames() {
-        List<Game> games = gameRepository.getGames();
-        return games.size();
+    public double getWinPercentage() {
+        List<Game> games = retrieveGameList();
+
+        long gameCount = games.size();
+        long wonGameCount = games.stream().filter(Game::isWin).count();
+
+        return percentage(wonGameCount, gameCount);
     }
 
+    private double percentage(long wonGameCount, long gameCount) {
+        return (double) wonGameCount / gameCount * 100;
+    }
+
+    private List<Game> retrieveGameList() {
+        return gameRepository.getGames();
+    }
 }
