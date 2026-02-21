@@ -1,9 +1,9 @@
 package org.kevinkib.config;
 
+import org.kevinkib.BlackJackService;
+import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.statistics.business.StatisticsService;
-import org.kevinkib.statistics.business.port.GameRepository;
-import org.kevinkib.statistics.infrastructure.adapter.GameRepositoryH2;
-import org.kevinkib.statistics.presentation.v1.StatisticsInternalController;
+import org.kevinkib.statistics.business.port.in.GameRepository;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Bean;
 public class AppConfig {
 
     @Bean
-    public StatisticsInternalController statisticsInternalController() {
-        return new StatisticsInternalController(statisticsService());
+    public BlackJackService blackJackService() {
+        return new BlackJackService(BlackJackService.getDataSource(), new FrenchDeckFactory(), statisticsService());
     }
 
     @Bean
@@ -22,7 +22,7 @@ public class AppConfig {
 
     @Bean
     public GameRepository gameRepository() {
-        return new GameRepositoryH2();
+        return null;
     }
 
 }
