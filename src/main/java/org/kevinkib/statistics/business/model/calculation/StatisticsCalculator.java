@@ -1,8 +1,10 @@
-package org.kevinkib.statistics.business.model;
+package org.kevinkib.statistics.business.model.calculation;
+
+import org.kevinkib.statistics.business.model.game.Game;
 
 import java.util.List;
 
-import static org.kevinkib.statistics.business.model.GameOutcome.WIN;
+import static org.kevinkib.statistics.business.model.game.GameOutcome.WIN;
 
 public class StatisticsCalculator {
 

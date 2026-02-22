@@ -1,8 +1,8 @@
 package org.kevinkib.statistics.business;
 
-import org.kevinkib.statistics.business.model.Game;
-import org.kevinkib.statistics.business.model.StatisticsCalculator;
-import org.kevinkib.statistics.business.model.StatisticsReport;
+import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.calculation.StatisticsCalculator;
+import org.kevinkib.statistics.business.model.calculation.StatisticsReport;
 import org.kevinkib.statistics.business.port.GameRepository;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.kevinkib.statistics.business.model;
+package org.kevinkib.statistics.business.model.calculation;
 
 public record StatisticsReport(
         int nbGames,

@@ -1,5 +1,8 @@
 package org.kevinkib.statistics.business.model;
 
+import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.game.GameOutcome;
+
 public final class GameBuilder {
     private GameOutcome outcome;
 

@@ -1,4 +1,4 @@
-package org.kevinkib.statistics.business.model;
+package org.kevinkib.statistics.business.model.game;
 
 public record Game(
         GameOutcome outcome) {

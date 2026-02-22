@@ -1,6 +1,9 @@
 package org.kevinkib.statistics.business.model;
 
 import org.junit.jupiter.api.Test;
+import org.kevinkib.statistics.business.model.calculation.StatisticsCalculator;
+import org.kevinkib.statistics.business.model.calculation.StatisticsReport;
+import org.kevinkib.statistics.business.model.game.Game;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +11,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.kevinkib.statistics.business.model.GameBuilder.aGame;
-import static org.kevinkib.statistics.business.model.GameOutcome.*;
+import static org.kevinkib.statistics.business.model.game.GameOutcome.*;
 
 
 public class StatisticsCalculatorTest {
