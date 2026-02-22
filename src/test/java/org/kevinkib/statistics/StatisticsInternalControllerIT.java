@@ -52,6 +52,25 @@ public class StatisticsInternalControllerIT {
         assertThat(nbGames, is(expectedNumberOfGames));
     }
 
+    @Test
+    public void whenGameStarts_thenCalculateCorrectWinPercentage() {
+        int wonGames = 2;
+        int lostGames = 3;
+
+        for (int i = 0; i < wonGames; ++i) {
+            createGameInDatabase(date, GameState.WIN);
+        }
+
+        for (int i = 0; i < lostGames; ++i) {
+            createGameInDatabase(date, GameState.LOSE);
+        }
+
+        double winRate = statisticsInternalController.getStatisticsReport().winRate();
+        double expectedWinRate = (double) wonGames / (wonGames + lostGames) * 100;
+
+        assertThat(winRate, is(expectedWinRate));
+    }
+
     private Long createGameInDatabase(LocalDate date, GameState status) {
         String sql = "INSERT INTO GAME (GAME_CREATION_DATE, GAME_STATE) VALUES (?, ?)";
 

@@ -8,6 +8,7 @@ import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
 import org.kevinkib.config.AppConfig;
 import org.kevinkib.statistics.presentation.v1.StatisticsInternalController;
+import org.kevinkib.statistics.presentation.v1.dto.StatisticsReportDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -322,14 +323,7 @@ public class BlackJackService {
             System.out.println("╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝");
             System.out.println();
 
-            List<GameEntity> gameDBs = getGameList();
-            System.out.println(" Number of games played : "+statistics.getStatisticsReport());
-
-            if (!gameDBs.isEmpty()) {
-                Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();
-                double winRate = (double) wonGames / gameDBs.size() * 100;
-                System.out.println(" Win percentage : "+ winRate + "%");
-            }
+            printStatistics();
 
             createGame();
 
@@ -400,6 +394,15 @@ public class BlackJackService {
         } while (stillPlay);
 
 
+    }
+
+    private void printStatistics() {
+        StatisticsReportDto report = statistics.getStatisticsReport();
+
+        System.out.println(" Number of games played : " + report.nbGames());
+        if (!report.isEmpty()) {
+            System.out.println(" Win percentage : " + report.winRate() + "%");
+        }
     }
 
     private void printScores() {
