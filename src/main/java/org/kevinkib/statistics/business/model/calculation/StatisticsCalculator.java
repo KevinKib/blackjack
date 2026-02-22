@@ -6,41 +6,53 @@ import org.kevinkib.statistics.business.model.game.Hand;
 import java.util.List;
 import java.util.Objects;
 
-import static org.kevinkib.statistics.business.model.game.GameOutcome.WIN;
-
 public class StatisticsCalculator {
 
     public StatisticsReport getStatisticsReport(List<Game> games) {
-        int nbGames = games.size();
-        if (nbGames == 0) {
+        List<Hand> hands = games.stream().map(Game::playerHand).filter(Objects::nonNull).toList();
+
+        if (games.isEmpty() || hands.isEmpty()) {
             return StatisticsReport.empty();
         }
 
-        long nbWonGames = games.stream().filter(game -> WIN.equals(game.outcome())).count();
-        double winRate = (double) nbWonGames / nbGames * 100;
+        double winRate = computeWinRate(games);
+        double average = computeAverageScore(hands);
+        double bustRate = computeBustRate(hands);
+        double blackJackRate = computeBlackJackRate(hands);
 
-        List<Hand> hands = games.stream().map(Game::playerHand).filter(Objects::nonNull).toList();
-
-        return new StatisticsReport(nbGames, winRate, getPlayerScoreStatistics(hands));
+        return new StatisticsReport(winRate, average, bustRate, blackJackRate);
     }
 
-    private ScoreStatistics getPlayerScoreStatistics(List<Hand> hands) {
+    private double computeWinRate(List<Game> games) {
+        int nbGames = games.size();
+
+        long nbWonGames = games.stream().filter(Game::isWin).count();
+        return percentage(nbWonGames, nbGames);
+    }
+
+    private double computeBlackJackRate(List<Hand> hands) {
         int nbHands = hands.size();
 
-        if (nbHands == 0) {
-            return ScoreStatistics.empty();
-        }
+        long nbBlackJacks = hands.stream().filter(Hand::isBlackjack).count();
+        return percentage(nbBlackJacks, nbHands);
+    }
 
-        int sumOfScores = hands.stream().map(Hand::score).reduce(0, Integer::sum);
-        double average = (double) sumOfScores / nbHands;
+    private double computeBustRate(List<Hand> hands) {
+        int nbHands = hands.size();
 
         long nbBusts = hands.stream().filter(Hand::isBusted).count();
-        double bustRate = (double) nbBusts / nbHands;
+        return percentage(nbBusts, nbHands);
+    }
 
-        long nbBlackJacks = hands.stream().filter(Hand::isBlackjack).count();
-        double blackJackRate = (double) nbBlackJacks / nbHands;
+    private double computeAverageScore(List<Hand> hands) {
+        int nbHands = hands.size();
 
-        return new ScoreStatistics(average, bustRate, blackJackRate);
+        int sumOfScores = hands.stream().map(Hand::score).reduce(0, Integer::sum);
+        return (double) sumOfScores / nbHands;
+    }
+
+    private double percentage(long nbWonGames, long nbGames) {
+        return (double) nbWonGames / nbGames * 100;
     }
 
 }

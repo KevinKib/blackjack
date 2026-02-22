@@ -7,8 +7,9 @@ import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
 import org.kevinkib.config.AppConfig;
-import org.kevinkib.statistics.presentation.v1.StatisticsInternalController;
-import org.kevinkib.statistics.presentation.v1.dto.StatisticsReportDto;
+import org.kevinkib.statistics.business.StatisticsService;
+import org.kevinkib.statistics.business.model.calculation.StatisticsReport;
+import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -41,272 +42,12 @@ public class BlackJackService {
     private List<Card> playerCards;
     private List<Card> dealerCards;
 
-    private final StatisticsInternalController statistics = new AppConfig().statisticsInternalController();
+    private final StatisticsUseCase statistics = new AppConfig().statisticsService();
 
     public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory) {
         this.deckFactory = deckFactory;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.scanner = new Scanner(System.in);
-    }
-
-    public static HikariDataSource getDataSource() {
-        if (dataSource != null) {
-            return dataSource;
-        }
-
-        dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_URL);
-        dataSource.setUsername(JDBC_USERNAME);
-        dataSource.setPassword(JDBC_PASSWORD);
-
-        return dataSource;
-    }
-
-    public static HikariDataSource getTestDataSource() {
-        if (dataSource != null) {
-            return dataSource;
-        }
-
-        dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_TEST_URL);
-        dataSource.setUsername(JDBC_USERNAME);
-        dataSource.setPassword(JDBC_PASSWORD);
-
-        return dataSource;
-    }
-
-    public GameState createGame() {
-        deck = deckFactory.generate(DeckType.FRENCH);
-        logger.write("New game");
-        createGameInDatabase();
-
-        playerCards = new ArrayList<>();
-        dealerCards = new ArrayList<>();
-
-        playerDraw();
-        dealerDraw();
-        playerDraw();
-        dealerDraw();
-
-        if (isBlackjack(playerCards) && isBlackjack(dealerCards)) {
-            gameState = GameState.TIE;
-        } else if (isBlackjack(playerCards)) {
-            gameState = GameState.WIN;
-        } else if (isBlackjack(dealerCards)) {
-            gameState = GameState.LOSE;
-        } else {
-            gameState = GameState.ONGOING;
-        }
-
-        updateGameStateInDatabase();
-        return gameState;
-    }
-
-    private void createGameInDatabase() {
-        String sql = "INSERT INTO GAME (GAME_CREATION_DATE, GAME_STATE) VALUES (?, ?)";
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
-            ps.setString(2, GameState.ONGOING.name());
-            return ps;
-        }, keyHolder);
-
-        gameId = keyHolder.getKey().longValue();
-    }
-
-    public GameState hit() {
-        playerDraw();
-
-        if (sumCards(playerCards) > 21) {
-            logger.write("Player exceeded 21 and lost");
-            gameState = GameState.LOSE;
-            updateGameStateInDatabase();
-            return gameState;
-        }
-
-        return gameState;
-    }
-
-    public GameState stand() {
-        logger.write("Player stands.");
-
-        dealerDrawUntil17();
-
-        if (sumCards(dealerCards) > 21) {
-            logger.write("Dealer exceeded 21. Player wins");
-            gameState = GameState.WIN;
-        }
-        else if (sumCards(dealerCards) > sumCards(playerCards)) {
-            logger.write("Dealer is the closest to 21. Player lost");
-            gameState = GameState.LOSE;
-        }
-        else if (sumCards(dealerCards) == sumCards(playerCards)) {
-            logger.write("Player and dealer have the same score. Tie");
-            gameState = GameState.TIE;
-        }
-        else if (sumCards(dealerCards) < sumCards(playerCards)) {
-            logger.write("Player is the closest to 21 and wins");
-            gameState = GameState.WIN;
-        }
-        else {
-            throw new IllegalStateException("Game should be ended if player stands");
-        }
-
-        updateGameStateInDatabase();
-
-        return gameState;
-    }
-
-    private void updateGameStateInDatabase() {
-        jdbcTemplate.update(
-                "UPDATE GAME SET GAME_STATE = ? WHERE GAME_ID = ?",
-                gameState.name(),
-                gameId
-        );
-    }
-
-    private List<GameEntity> getGameList() {
-        List<GameEntity> gamesDB = jdbcTemplate.query("SELECT * FROM GAME",
-                (rs, rowNum) -> new GameEntity(
-                        rs.getLong("GAME_ID"),
-                        rs.getDate("GAME_CREATION_DATE"),
-                        rs.getString("GAME_STATE")
-                ));
-
-        return gamesDB;
-    }
-
-    public Long getGameId() {
-        return gameId;
-    }
-
-    public int getPlayerScore() {
-        return sumCards(playerCards);
-    }
-
-    public int getDealerScore() {
-        return sumCards(dealerCards);
-    }
-
-    private void dealerDrawUntil17() {
-        while(sumCards(dealerCards) < 17) {
-            draw(dealerCards);
-        }
-    }
-
-    public boolean playerDraw() {
-        boolean drawed = draw(playerCards);
-        Card cardDrawn = playerCards.get(playerCards.size()-1);
-        logger.forceWrite("Player drew "+cardDrawn.getRank()+" of "+cardDrawn.getSuit());
-        saveMoveInDatabase(false, cardDrawn);
-
-        return drawed;
-    }
-
-    public boolean dealerDraw() {
-        boolean drawed = draw(dealerCards);
-        Card cardDrawn = dealerCards.get(dealerCards.size()-1);
-        logger.forceWrite("Dealer drew "+cardDrawn.getRank()+" of "+cardDrawn.getSuit());
-        saveMoveInDatabase(true, cardDrawn);
-
-        return drawed;
-    }
-
-    private void saveMoveInDatabase(boolean isDealer, Card cardDrawn) {
-        jdbcTemplate.update(
-                "INSERT INTO PILE(PILE_FK_GAME_ID, PILE_PLAYER_ID, PILE_CARD_RANK, PILE_CARD_COLOR) " +
-                        "VALUES(?,?,?,?);",
-                gameId,
-                isDealer ? 0 : 1,
-                cardDrawn.getRank().getStrength(),
-                cardDrawn.getSuit().toString()
-        );
-    }
-
-    private boolean draw(List<Card> cards) {
-        Card card = deck.draw();
-
-        cards.add(card);
-        if (sumCards(cards) > 21) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public int sumCards(List<Card> cards) {
-        int sum = 0;
-        for (var card : cards) {
-            if (!FrenchRank.ACE.equals(card.getRank())) {
-                sum += ((FrenchRank)card.getRank()).getValue();
-            }
-        }
-        for (var card : cards) {
-            if (FrenchRank.ACE.equals(card.getRank())) {
-                if (sum + 11 > 21) {
-                    sum += 1;
-                }
-                else {
-                    sum += 11;
-                }
-            }
-        }
-        return sum;
-    }
-
-    public void loadGame(Long gameId) {
-        GameEntity gameDB = jdbcTemplate.queryForObject("SELECT * FROM GAME WHERE GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new GameEntity(
-                        rs.getLong("GAME_ID"),
-                        rs.getDate("GAME_CREATION_DATE"),
-                        rs.getString("GAME_STATE")
-                ));
-
-        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new PileEntity(
-                        rs.getLong("PILE_ID"),
-                        rs.getInt("PILE_PLAYER_ID"),
-                        rs.getInt("PILE_CARD_RANK"),
-                        rs.getString("PILE_CARD_COLOR")
-                ));
-
-        if (gameDB == null) {
-            return;
-        }
-
-        playerCards = new ArrayList<>();
-        dealerCards = new ArrayList<>();
-
-        for (PileEntity pileEntity : pilesDB) {
-            if (pileEntity.playerId() == 0L) {
-                dealerCards.add(new Card(
-                        FrenchRank.fromStrength(pileEntity.cardRank()),
-                        FrenchSuit.from(pileEntity.cardColor())
-                ));
-            }
-            else {
-                playerCards.add(new Card(
-                        FrenchRank.fromStrength(pileEntity.cardRank()),
-                        FrenchSuit.from(pileEntity.cardColor())
-                ));
-            }
-        }
-
-        deck = deckFactory.generate(DeckType.FRENCH);
-
-        for (Card card : playerCards) {
-            deck.remove(card);
-        }
-        for (Card card : dealerCards) {
-            deck.remove(card);
-        }
-        logger.write("Loaded game "+gameId);
-
-        this.gameId = gameId;
-        gameState = GameState.from(gameDB.state());
     }
 
     public void startGUI() {
@@ -392,17 +133,254 @@ public class BlackJackService {
                 }
             } while (!answered);
         } while (stillPlay);
+    }
 
+    public static int calculateScore(List<Card> cards) {
+        int sum = 0;
+        for (var card : cards) {
+            if (!FrenchRank.ACE.equals(card.getRank())) {
+                sum += ((FrenchRank)card.getRank()).getValue();
+            }
+        }
+        for (var card : cards) {
+            if (FrenchRank.ACE.equals(card.getRank())) {
+                if (sum + 11 > 21) {
+                    sum += 1;
+                }
+                else {
+                    sum += 11;
+                }
+            }
+        }
+        return sum;
+    }
 
+    public GameState createGame() {
+        deck = deckFactory.generate(DeckType.FRENCH);
+        logger.write("New game");
+        createGameInDatabase();
+
+        playerCards = new ArrayList<>();
+        dealerCards = new ArrayList<>();
+
+        playerDraw();
+        dealerDraw();
+        playerDraw();
+        dealerDraw();
+
+        if (isBlackjack(playerCards) && isBlackjack(dealerCards)) {
+            gameState = GameState.TIE;
+        } else if (isBlackjack(playerCards)) {
+            gameState = GameState.WIN;
+        } else if (isBlackjack(dealerCards)) {
+            gameState = GameState.LOSE;
+        } else {
+            gameState = GameState.ONGOING;
+        }
+
+        updateGameStateInDatabase();
+        return gameState;
+    }
+
+    private void createGameInDatabase() {
+        String sql = "INSERT INTO GAME (GAME_CREATION_DATE, GAME_STATE) VALUES (?, ?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setString(2, GameState.ONGOING.name());
+            return ps;
+        }, keyHolder);
+
+        gameId = keyHolder.getKey().longValue();
+    }
+
+    public GameState hit() {
+        playerDraw();
+
+        if (calculateScore(playerCards) > 21) {
+            logger.write("Player exceeded 21 and lost");
+            gameState = GameState.LOSE;
+            updateGameStateInDatabase();
+            return gameState;
+        }
+
+        return gameState;
+    }
+
+    public GameState stand() {
+        logger.write("Player stands.");
+
+        dealerDrawUntil17();
+
+        if (calculateScore(dealerCards) > 21) {
+            logger.write("Dealer exceeded 21. Player wins");
+            gameState = GameState.WIN;
+        }
+        else if (calculateScore(dealerCards) > calculateScore(playerCards)) {
+            logger.write("Dealer is the closest to 21. Player lost");
+            gameState = GameState.LOSE;
+        }
+        else if (calculateScore(dealerCards) == calculateScore(playerCards)) {
+            logger.write("Player and dealer have the same score. Tie");
+            gameState = GameState.TIE;
+        }
+        else if (calculateScore(dealerCards) < calculateScore(playerCards)) {
+            logger.write("Player is the closest to 21 and wins");
+            gameState = GameState.WIN;
+        }
+        else {
+            throw new IllegalStateException("Game should be ended if player stands");
+        }
+
+        updateGameStateInDatabase();
+
+        return gameState;
+    }
+
+    private void updateGameStateInDatabase() {
+        jdbcTemplate.update(
+                "UPDATE GAME SET GAME_STATE = ? WHERE GAME_ID = ?",
+                gameState.name(),
+                gameId
+        );
+    }
+
+    private List<GameEntity> getGameList() {
+        List<GameEntity> gamesDB = jdbcTemplate.query("SELECT * FROM GAME",
+                (rs, rowNum) -> new GameEntity(
+                        rs.getLong("GAME_ID"),
+                        rs.getDate("GAME_CREATION_DATE"),
+                        rs.getDate("GAME_CREATION_DATE"),
+                        rs.getLong("GAME_ID"),
+                        "Name",
+                        rs.getString("GAME_STATE")
+                ));
+
+        return gamesDB;
+    }
+
+    public Long getGameId() {
+        return gameId;
+    }
+
+    public int getPlayerScore() {
+        return calculateScore(playerCards);
+    }
+
+    public int getDealerScore() {
+        return calculateScore(dealerCards);
+    }
+
+    private void dealerDrawUntil17() {
+        while(calculateScore(dealerCards) < 17) {
+            draw(dealerCards);
+        }
+    }
+
+    public boolean playerDraw() {
+        boolean drawed = draw(playerCards);
+        Card cardDrawn = playerCards.get(playerCards.size()-1);
+        logger.forceWrite("Player drew "+cardDrawn.getRank()+" of "+cardDrawn.getSuit());
+        saveMoveInDatabase(false, cardDrawn);
+
+        return drawed;
+    }
+
+    public boolean dealerDraw() {
+        boolean drawed = draw(dealerCards);
+        Card cardDrawn = dealerCards.get(dealerCards.size()-1);
+        logger.forceWrite("Dealer drew "+cardDrawn.getRank()+" of "+cardDrawn.getSuit());
+        saveMoveInDatabase(true, cardDrawn);
+
+        return drawed;
+    }
+
+    private void saveMoveInDatabase(boolean isDealer, Card cardDrawn) {
+        jdbcTemplate.update(
+                "INSERT INTO PILE(PILE_FK_GAME_ID, PILE_PLAYER_ID, PILE_CARD_RANK, PILE_CARD_COLOR) " +
+                        "VALUES(?,?,?,?);",
+                gameId,
+                isDealer ? 0 : 1,
+                cardDrawn.getRank().getStrength(),
+                cardDrawn.getSuit().toString()
+        );
+    }
+
+    private boolean draw(List<Card> cards) {
+        Card card = deck.draw();
+
+        cards.add(card);
+        if (calculateScore(cards) > 21) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public void loadGame(Long gameId) {
+        GameEntity gameDB = jdbcTemplate.queryForObject("SELECT * FROM GAME WHERE GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new GameEntity(
+                        rs.getLong("GAME_ID"),
+                        rs.getDate("GAME_CREATION_DATE"),
+                        rs.getDate("GAME_CREATION_DATE"),
+                        rs.getLong("GAME_ID"),
+                        "Name",
+                        rs.getString("GAME_STATE")
+                ));
+
+        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new PileEntity(
+                        rs.getLong("PILE_ID"),
+                        rs.getInt("PILE_PLAYER_ID"),
+                        rs.getInt("PILE_CARD_RANK"),
+                        rs.getString("PILE_CARD_COLOR")
+                ));
+
+        if (gameDB == null) {
+            return;
+        }
+
+        playerCards = new ArrayList<>();
+        dealerCards = new ArrayList<>();
+
+        for (PileEntity pileEntity : pilesDB) {
+            if (pileEntity.playerId() == 0L) {
+                dealerCards.add(new Card(
+                        FrenchRank.fromStrength(pileEntity.cardRank()),
+                        FrenchSuit.from(pileEntity.cardColor())
+                ));
+            }
+            else {
+                playerCards.add(new Card(
+                        FrenchRank.fromStrength(pileEntity.cardRank()),
+                        FrenchSuit.from(pileEntity.cardColor())
+                ));
+            }
+        }
+
+        deck = deckFactory.generate(DeckType.FRENCH);
+
+        for (Card card : playerCards) {
+            deck.remove(card);
+        }
+        for (Card card : dealerCards) {
+            deck.remove(card);
+        }
+        logger.write("Loaded game "+gameId);
+
+        this.gameId = gameId;
+        gameState = GameState.from(gameDB.state());
     }
 
     private void printStatistics() {
-        StatisticsReportDto report = statistics.getStatisticsReport();
-
-        System.out.println(" Number of games played : " + report.nbGames());
-        if (!report.isEmpty()) {
-            System.out.println(" Win percentage : " + report.winRate() + "%");
-        }
+        StatisticsReport report = statistics.getStatisticsReport();
+        System.out.println(" Win percentage : " + report.winRate() + " %");
+        System.out.println(" Average player score : " + report.average() + " %");
+        System.out.println(" Blackjack rate (21 in 2 cards): " + report.blackJackRate() + " %");
+        System.out.println(" Bust rate (>21): " + report.bustRate() + " %");
     }
 
     private void printScores() {
@@ -418,7 +396,7 @@ public class BlackJackService {
     }
 
     private boolean isBlackjack(List<Card> cards) {
-        return sumCards(cards) == 21 && cards.size() == 2;
+        return calculateScore(cards) == 21 && cards.size() == 2;
     }
 
     private void printFinalState(GameState state) {
@@ -437,6 +415,32 @@ public class BlackJackService {
             case TIE -> System.out.println("It's a tie.");
             default -> System.out.println("Game ended.");
         }
+    }
+
+    public static HikariDataSource getDataSource() {
+        if (dataSource != null) {
+            return dataSource;
+        }
+
+        dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_URL);
+        dataSource.setUsername(JDBC_USERNAME);
+        dataSource.setPassword(JDBC_PASSWORD);
+
+        return dataSource;
+    }
+
+    public static HikariDataSource getTestDataSource() {
+        if (dataSource != null) {
+            return dataSource;
+        }
+
+        dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_TEST_URL);
+        dataSource.setUsername(JDBC_USERNAME);
+        dataSource.setPassword(JDBC_PASSWORD);
+
+        return dataSource;
     }
 
     /*

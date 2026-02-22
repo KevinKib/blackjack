@@ -2,6 +2,7 @@ package org.kevinkib.statistics.business.model.calculation;
 
 import org.junit.jupiter.api.Test;
 import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.game.GameBuilder;
 import org.kevinkib.statistics.business.model.game.GameOutcome;
 import org.kevinkib.statistics.business.model.game.HandBuilder;
 
@@ -21,19 +22,6 @@ public class StatisticsCalculatorTest {
     private final StatisticsCalculator statisticsCalculator = new StatisticsCalculator();
 
     @Test
-    public void canCalculateNumberOfGames() {
-        int nbGames = 5;
-        List<Game> games = new ArrayList<>();
-
-        for (int i = 0; i < nbGames; ++i) {
-            games.add(aGame().withOutcome(WIN).build());
-        }
-
-        StatisticsReport report = statisticsCalculator.getStatisticsReport(games);
-        assertThat(report.nbGames(), is(nbGames));
-    }
-
-    @Test
     public void canCalculateWinRateOfGames() {
         int nbWonGames = 3;
         int nbLostGames = 2;
@@ -41,13 +29,13 @@ public class StatisticsCalculatorTest {
         List<Game> games = new ArrayList<>();
 
         for (int i = 0; i < nbWonGames; ++i) {
-            games.add(aGame().withOutcome(WIN).build());
+            games.add(aGameWithHand().withOutcome(WIN).build());
         }
         for (int i = 0; i < nbLostGames; ++i) {
-            games.add(aGame().withOutcome(LOSS).build());
+            games.add(aGameWithHand().withOutcome(LOSS).build());
         }
         for (int i = 0; i < nbDrewGames; ++i) {
-            games.add(aGame().withOutcome(DRAW).build());
+            games.add(aGameWithHand().withOutcome(DRAW).build());
         }
 
         double expectedWinRate = (double) nbWonGames / (nbWonGames + nbDrewGames + nbLostGames) * 100;
@@ -87,7 +75,7 @@ public class StatisticsCalculatorTest {
         double expectedAverageScore = (double) (scoreA + scoreB + scoreC) / nbGames;
 
         StatisticsReport report = statisticsCalculator.getStatisticsReport(games);
-        assertThat(report.playerScoreStatistics().average(), is(expectedAverageScore));
+        assertThat(report.average(), is(expectedAverageScore));
     }
 
     @Test
@@ -108,10 +96,10 @@ public class StatisticsCalculatorTest {
                 aHand().withScore(scoreC).build()
         ).build());
 
-        double expectedBustRate = (double) 2 / nbGames;
+        double expectedBustRate = (double) 2 / nbGames * 100;
 
         StatisticsReport report = statisticsCalculator.getStatisticsReport(games);
-        assertThat(report.playerScoreStatistics().bustRate(), is(expectedBustRate));
+        assertThat(report.bustRate(), is(expectedBustRate));
     }
 
     @Test
@@ -134,10 +122,16 @@ public class StatisticsCalculatorTest {
                 aHand().withScore(scoreC).withNbCards(nonBlackjackNbCards).build()
         ).build());
 
-        double expectedBlackjackRate = (double) 1 / nbGames;
+        double expectedBlackjackRate = (double) 1 / nbGames * 100;
 
         StatisticsReport report = statisticsCalculator.getStatisticsReport(games);
-        assertThat(report.playerScoreStatistics().blackJackRate(), is(expectedBlackjackRate));
+        assertThat(report.blackJackRate(), is(expectedBlackjackRate));
+    }
+
+    private static GameBuilder aGameWithHand() {
+        return aGame().withPlayerHand(
+                aHand().withScore(17).build()
+        );
     }
 
 }
