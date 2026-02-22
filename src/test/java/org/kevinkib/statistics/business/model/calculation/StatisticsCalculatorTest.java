@@ -2,6 +2,7 @@ package org.kevinkib.statistics.business.model.calculation;
 
 import org.junit.jupiter.api.Test;
 import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.game.GameOutcome;
 import org.kevinkib.statistics.business.model.game.HandBuilder;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class StatisticsCalculatorTest {
         List<Game> games = new ArrayList<>();
 
         for (int i = 0; i < nbGames; ++i) {
-            games.add(aGame().build());
+            games.add(aGame().withOutcome(WIN).build());
         }
 
         StatisticsReport report = statisticsCalculator.getStatisticsReport(games);

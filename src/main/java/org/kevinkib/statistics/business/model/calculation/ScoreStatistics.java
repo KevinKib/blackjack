@@ -4,4 +4,8 @@ public record ScoreStatistics(
         double average,
         double bustRate,
         double blackJackRate) {
+
+    public static ScoreStatistics empty() {
+        return new ScoreStatistics(0.0, 0.0, 0.0);
+    }
 }
