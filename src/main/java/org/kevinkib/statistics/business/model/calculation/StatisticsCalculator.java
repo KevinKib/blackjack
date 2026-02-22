@@ -1,6 +1,7 @@
 package org.kevinkib.statistics.business.model.calculation;
 
 import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.game.Hand;
 
 import java.util.List;
 
@@ -18,7 +19,13 @@ public class StatisticsCalculator {
             winRate = (double) nbWonGames / nbGames * 100;
         }
 
-        return new StatisticsReport(nbGames, winRate);
+        List<Hand> hands = null;
+
+        return new StatisticsReport(nbGames, winRate, getPlayerScoreStatistics(hands));
+    }
+
+    private ScoreStatistics getPlayerScoreStatistics(List<Hand> hands) {
+        return null;
     }
 
 }

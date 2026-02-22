@@ -1,10 +1,8 @@
-package org.kevinkib.statistics.business.model;
-
-import org.kevinkib.statistics.business.model.game.Game;
-import org.kevinkib.statistics.business.model.game.GameOutcome;
+package org.kevinkib.statistics.business.model.game;
 
 public final class GameBuilder {
     private GameOutcome outcome;
+    private Hand hand;
 
     private GameBuilder() {
     }
@@ -18,7 +16,12 @@ public final class GameBuilder {
         return this;
     }
 
+    public GameBuilder withPlayerHand(Hand hand) {
+        this.hand = hand;
+        return this;
+    }
+
     public Game build() {
-        return new Game(outcome);
+        return new Game(outcome, hand);
     }
 }

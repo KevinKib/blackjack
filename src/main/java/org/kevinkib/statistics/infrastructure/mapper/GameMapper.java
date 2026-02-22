@@ -16,7 +16,7 @@ public class GameMapper {
             return null;
         }
 
-        return new Game(outcome);
+        return new Game(outcome, null);
     }
 
     public static List<Game> mapToDomain(List<GameDB> games) {

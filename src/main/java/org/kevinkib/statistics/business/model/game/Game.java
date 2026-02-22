@@ -1,5 +1,6 @@
 package org.kevinkib.statistics.business.model.game;
 
 public record Game(
-        GameOutcome outcome) {
+        GameOutcome outcome,
+        Hand playerHand) {
 }
