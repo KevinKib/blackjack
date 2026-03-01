@@ -40,11 +40,12 @@ public class BlackJackService {
     private List<Card> playerCards;
     private List<Card> dealerCards;
 
-    private final StatisticsService statistics = new AppConfig().statisticsService();
+    private final StatisticsService statistics;
 
-    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory) {
+    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory, StatisticsService statisticsService) {
         this.deckFactory = deckFactory;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.statistics = statisticsService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -172,6 +173,9 @@ public class BlackJackService {
                 (rs, rowNum) -> new GameEntity(
                         rs.getLong("GAME_ID"),
                         rs.getDate("GAME_CREATION_DATE"),
+                        rs.getDate("GAME_CREATION_DATE"),
+                        rs.getLong("GAME_ID"),
+                        "Name",
                         rs.getString("GAME_STATE")
                 ));
 
@@ -261,6 +265,9 @@ public class BlackJackService {
                 (rs, rowNum) -> new GameEntity(
                         rs.getLong("GAME_ID"),
                         rs.getDate("GAME_CREATION_DATE"),
+                        rs.getDate("GAME_CREATION_DATE"),
+                        rs.getLong("GAME_ID"),
+                        "Name",
                         rs.getString("GAME_STATE")
                 ));
 
