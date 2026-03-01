@@ -23,13 +23,8 @@ public class GameRepositoryH2 implements GameRepository {
         List<GameDB> gameDBList = jdbcTemplate.query("SELECT * FROM GAME", new Object[]{},
                 (rs, rowNum) -> new GameDB(
                         rs.getLong("GAME_ID"),
-                        rs.getDate("GAME_CREATION_DATE"),
                         rs.getString("GAME_STATE")
                 ));
-
-        if (gameDBList.isEmpty()) {
-            return Collections.emptyList();
-        }
 
         return GameMapper.mapToDomain(gameDBList);
     }
