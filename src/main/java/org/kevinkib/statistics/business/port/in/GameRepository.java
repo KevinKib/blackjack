@@ -1,4 +1,4 @@
-package org.kevinkib.statistics.business.port;
+package org.kevinkib.statistics.business.port.in;
 
 import org.kevinkib.statistics.business.model.Game;
 

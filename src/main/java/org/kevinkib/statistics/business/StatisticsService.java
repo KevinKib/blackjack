@@ -1,12 +1,12 @@
 package org.kevinkib.statistics.business;
 
 import org.kevinkib.statistics.business.model.Game;
-import org.kevinkib.statistics.business.model.GameOutcome;
-import org.kevinkib.statistics.business.port.GameRepository;
+import org.kevinkib.statistics.business.port.in.GameRepository;
+import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
 
 import java.util.List;
 
-public class StatisticsService {
+public class StatisticsService implements StatisticsUseCase {
 
     private final GameRepository gameRepository;
 
