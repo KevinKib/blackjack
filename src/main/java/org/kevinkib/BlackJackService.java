@@ -8,6 +8,7 @@ import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
 import org.kevinkib.config.AppConfig;
 import org.kevinkib.statistics.business.StatisticsService;
+import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -40,39 +41,109 @@ public class BlackJackService {
     private List<Card> playerCards;
     private List<Card> dealerCards;
 
-    private final StatisticsService statistics;
+    private final StatisticsUseCase statistics;
 
-    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory, StatisticsService statisticsService) {
+    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory, StatisticsUseCase statisticsService) {
         this.deckFactory = deckFactory;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.statistics = statisticsService;
         this.scanner = new Scanner(System.in);
     }
 
-    public static HikariDataSource getDataSource() {
-        if (dataSource != null) {
-            return dataSource;
-        }
+    public void startGUI() {
 
-        dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_URL);
-        dataSource.setUsername(JDBC_USERNAME);
-        dataSource.setPassword(JDBC_PASSWORD);
+        boolean stillPlay = true;
 
-        return dataSource;
+        do {
+            System.out.println();
+            System.out.println("██████╗ ██╗      █████╗  ██████╗██╗  ██╗     ██╗ █████╗  ██████╗██╗  ██╗");
+            System.out.println("██╔══██╗██║     ██╔══██╗██╔════╝██║ ██╔╝     ██║██╔══██╗██╔════╝██║ ██╔╝");
+            System.out.println("██████╔╝██║     ███████║██║     █████╔╝      ██║███████║██║     █████╔╝ ");
+            System.out.println("██╔══██╗██║     ██╔══██║██║     ██╔═██╗ ██   ██║██╔══██║██║     ██╔═██╗ ");
+            System.out.println("██████╔╝███████╗██║  ██║╚██████╗██║  ██╗╚█████╔╝██║  ██║╚██████╗██║  ██╗");
+            System.out.println("╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝");
+            System.out.println();
+
+            printStatistics();
+
+            createGame();
+
+            if (isGameOver(gameState)) {
+                printFinalState(gameState);
+                continue;
+            }
+
+            boolean running = true;
+
+            while (running) {
+                printScores();
+
+                System.out.println("\nChoose an action:");
+                System.out.println("1 - Hit");
+                System.out.println("2 - Stand");
+                System.out.print("> ");
+
+                String input = scanner.nextLine();
+
+                switch (input) {
+
+                    case "1" -> {
+                        GameState state = hit();
+                        if (isGameOver(state)) {
+                            printFinalState(state);
+                            running = false;
+                        }
+                    }
+
+                    case "2" -> {
+                        GameState state = stand();
+                        printFinalState(state);
+                        running = false;
+                    }
+
+                    default -> System.out.println("Invalid choice. Please select 1 or 2.");
+                }
+            }
+
+            System.out.println("Game over.");
+
+            boolean answered = false;
+
+            do {
+
+                System.out.println("\nKeep playing?");
+                System.out.println("1 - Yes");
+                System.out.println("2 - No");
+                System.out.print("> ");
+
+                String input = scanner.nextLine();
+
+                switch (input) {
+
+                    case "1" -> {
+                        answered = true;
+                    }
+
+                    case "2" -> {
+                        stillPlay = false;
+                        answered = true;
+                    }
+
+                    default -> System.out.println("Invalid choice. Please select 1 or 2.");
+                }
+            } while (!answered);
+        } while (stillPlay);
+
+
     }
 
-    public static HikariDataSource getTestDataSource() {
-        if (dataSource != null) {
-            return dataSource;
+    private void printStatistics() {
+        List<GameEntity> gameDBs = getGameList();
+        if (!gameDBs.isEmpty()) {
+            Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();
+            double winRate = (double) wonGames / gameDBs.size() * 100;
+            System.out.println(" Win percentage : "+ winRate + "%");
         }
-
-        dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_TEST_URL);
-        dataSource.setUsername(JDBC_USERNAME);
-        dataSource.setPassword(JDBC_PASSWORD);
-
-        return dataSource;
     }
 
     public GameState createGame() {
@@ -315,98 +386,6 @@ public class BlackJackService {
         gameState = GameState.from(gameDB.state());
     }
 
-    public void startGUI() {
-
-        boolean stillPlay = true;
-
-        do {
-            System.out.println();
-            System.out.println("██████╗ ██╗      █████╗  ██████╗██╗  ██╗     ██╗ █████╗  ██████╗██╗  ██╗");
-            System.out.println("██╔══██╗██║     ██╔══██╗██╔════╝██║ ██╔╝     ██║██╔══██╗██╔════╝██║ ██╔╝");
-            System.out.println("██████╔╝██║     ███████║██║     █████╔╝      ██║███████║██║     █████╔╝ ");
-            System.out.println("██╔══██╗██║     ██╔══██║██║     ██╔═██╗ ██   ██║██╔══██║██║     ██╔═██╗ ");
-            System.out.println("██████╔╝███████╗██║  ██║╚██████╗██║  ██╗╚█████╔╝██║  ██║╚██████╗██║  ██╗");
-            System.out.println("╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝");
-            System.out.println();
-
-            List<GameEntity> gameDBs = getGameList();
-            if (!gameDBs.isEmpty()) {
-                Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();
-                double winRate = (double) wonGames / gameDBs.size() * 100;
-                System.out.println(" Win percentage : "+ winRate + "%");
-            }
-
-            createGame();
-
-            if (isGameOver(gameState)) {
-                printFinalState(gameState);
-                continue;
-            }
-
-            boolean running = true;
-
-            while (running) {
-                printScores();
-
-                System.out.println("\nChoose an action:");
-                System.out.println("1 - Hit");
-                System.out.println("2 - Stand");
-                System.out.print("> ");
-
-                String input = scanner.nextLine();
-
-                switch (input) {
-
-                    case "1" -> {
-                        GameState state = hit();
-                        if (isGameOver(state)) {
-                            printFinalState(state);
-                            running = false;
-                        }
-                    }
-
-                    case "2" -> {
-                        GameState state = stand();
-                        printFinalState(state);
-                        running = false;
-                    }
-
-                    default -> System.out.println("Invalid choice. Please select 1 or 2.");
-                }
-            }
-
-            System.out.println("Game over.");
-
-            boolean answered = false;
-
-            do {
-
-                System.out.println("\nKeep playing?");
-                System.out.println("1 - Yes");
-                System.out.println("2 - No");
-                System.out.print("> ");
-
-                String input = scanner.nextLine();
-
-                switch (input) {
-
-                    case "1" -> {
-                        answered = true;
-                    }
-
-                    case "2" -> {
-                        stillPlay = false;
-                        answered = true;
-                    }
-
-                    default -> System.out.println("Invalid choice. Please select 1 or 2.");
-                }
-            } while (!answered);
-        } while (stillPlay);
-
-
-    }
-
     private void printScores() {
         System.out.println("\n--- Current Scores ---");
         System.out.println("Player: " + getPlayerScore());
@@ -441,16 +420,29 @@ public class BlackJackService {
         }
     }
 
-    /*
+    public static HikariDataSource getDataSource() {
+        if (dataSource != null) {
+            return dataSource;
+        }
 
-    règles:
-    - un joueur, un croupier; le joueur commence
-    - le joueur pioche directement une carte
-    - un joueur a pour somme la somme des cartes (têtes à 10, as à 11)
-    - si un joueur dépasse 21, il perd
-    - sinon, le joueur le plus proche de 21 gagne
+        dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_URL);
+        dataSource.setUsername(JDBC_USERNAME);
+        dataSource.setPassword(JDBC_PASSWORD);
 
-     */
+        return dataSource;
+    }
 
+    public static HikariDataSource getTestDataSource() {
+        if (dataSource != null) {
+            return dataSource;
+        }
 
+        dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_TEST_URL);
+        dataSource.setUsername(JDBC_USERNAME);
+        dataSource.setPassword(JDBC_PASSWORD);
+
+        return dataSource;
+    }
 }
