@@ -1,12 +1,14 @@
 package org.kevinkib.statistics.business;
 
-import org.kevinkib.statistics.business.model.Game;
-import org.kevinkib.statistics.business.model.GameOutcome;
-import org.kevinkib.statistics.business.port.GameRepository;
+import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.calculation.StatisticsCalculator;
+import org.kevinkib.statistics.business.model.calculation.StatisticsReport;
+import org.kevinkib.statistics.business.port.in.GameRepository;
+import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
 
 import java.util.List;
 
-public class StatisticsService {
+public class StatisticsService implements StatisticsUseCase {
 
     private final GameRepository gameRepository;
 
@@ -14,20 +16,9 @@ public class StatisticsService {
         this.gameRepository = gameRepository;
     }
 
-    public double getWinPercentage() {
-        List<Game> games = retrieveGameList();
-
-        long gameCount = games.size();
-        long wonGameCount = games.stream().filter(Game::isWin).count();
-
-        return percentage(wonGameCount, gameCount);
+    public StatisticsReport getStatisticsReport() {
+        List<Game> games = gameRepository.getGames();
+        return new StatisticsCalculator().getStatisticsReport(games);
     }
 
-    private double percentage(long wonGameCount, long gameCount) {
-        return (double) wonGameCount / gameCount * 100;
-    }
-
-    private List<Game> retrieveGameList() {
-        return gameRepository.getGames();
-    }
 }

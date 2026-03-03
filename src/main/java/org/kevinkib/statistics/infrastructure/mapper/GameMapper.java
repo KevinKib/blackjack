@@ -1,6 +1,6 @@
 package org.kevinkib.statistics.infrastructure.mapper;
 
-import org.kevinkib.statistics.business.model.Game;
+import org.kevinkib.statistics.business.model.game.Game;
 import org.kevinkib.statistics.infrastructure.entity.GameDB;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public class GameMapper {
 
     public static Game mapToDomain(GameDB game) {
-        return new Game();
+        return new Game(GameOutcomeMapper.fromState(game.state()), null);
     }
 
     public static List<Game> mapToDomain(List<GameDB> games) {

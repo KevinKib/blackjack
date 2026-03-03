@@ -8,6 +8,7 @@ import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
 import org.kevinkib.config.AppConfig;
 import org.kevinkib.statistics.business.StatisticsService;
+import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -40,9 +41,9 @@ public class BlackJackService {
     private List<Card> playerCards;
     private List<Card> dealerCards;
 
-    private final StatisticsService statistics;
+    private final StatisticsUseCase statistics;
 
-    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory, StatisticsService statisticsService) {
+    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory, StatisticsUseCase statisticsService) {
         this.deckFactory = deckFactory;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.statistics = statisticsService;
@@ -329,12 +330,7 @@ public class BlackJackService {
             System.out.println("╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝");
             System.out.println();
 
-            List<GameEntity> gameDBs = getGameList();
-            if (!gameDBs.isEmpty()) {
-                Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();
-                double winRate = (double) wonGames / gameDBs.size() * 100;
-                System.out.println(" Win percentage : "+ winRate + "%");
-            }
+            System.out.println(" Win percentage : " + statistics.getStatisticsReport().winRate() + "%");
 
             createGame();
 
@@ -440,17 +436,6 @@ public class BlackJackService {
             default -> System.out.println("Game ended.");
         }
     }
-
-    /*
-
-    règles:
-    - un joueur, un croupier; le joueur commence
-    - le joueur pioche directement une carte
-    - un joueur a pour somme la somme des cartes (têtes à 10, as à 11)
-    - si un joueur dépasse 21, il perd
-    - sinon, le joueur le plus proche de 21 gagne
-
-     */
 
 
 }
