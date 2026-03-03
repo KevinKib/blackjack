@@ -329,12 +329,7 @@ public class BlackJackService {
             System.out.println("╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝");
             System.out.println();
 
-            List<GameEntity> gameDBs = getGameList();
-            if (!gameDBs.isEmpty()) {
-                Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(GameState.WIN.name())).count();
-                double winRate = (double) wonGames / gameDBs.size() * 100;
-                System.out.println(" Win percentage : "+ winRate + "%");
-            }
+            System.out.println(" Win percentage : " + statistics.getWinPercentage() + "%");
 
             createGame();
 
@@ -440,17 +435,6 @@ public class BlackJackService {
             default -> System.out.println("Game ended.");
         }
     }
-
-    /*
-
-    règles:
-    - un joueur, un croupier; le joueur commence
-    - le joueur pioche directement une carte
-    - un joueur a pour somme la somme des cartes (têtes à 10, as à 11)
-    - si un joueur dépasse 21, il perd
-    - sinon, le joueur le plus proche de 21 gagne
-
-     */
 
 
 }

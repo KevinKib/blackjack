@@ -8,7 +8,7 @@ import java.util.List;
 public class GameMapper {
 
     public static Game mapToDomain(GameDB game) {
-        return new Game();
+        return new Game(GameOutcomeMapper.fromState(game.state()));
     }
 
     public static List<Game> mapToDomain(List<GameDB> games) {
