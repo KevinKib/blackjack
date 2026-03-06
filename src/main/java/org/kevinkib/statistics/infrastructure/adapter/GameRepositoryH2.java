@@ -1,8 +1,8 @@
 package org.kevinkib.statistics.infrastructure.adapter;
 
 import org.kevinkib.BlackJackService;
-import org.kevinkib.statistics.business.model.game.Game;
-import org.kevinkib.statistics.business.model.game.Hand;
+import org.kevinkib.statistics.business.model.Game;
+import org.kevinkib.statistics.business.model.Hand;
 import org.kevinkib.statistics.business.port.in.GameRepository;
 import org.kevinkib.statistics.infrastructure.entity.GameDB;
 import org.kevinkib.statistics.infrastructure.entity.PileDB;

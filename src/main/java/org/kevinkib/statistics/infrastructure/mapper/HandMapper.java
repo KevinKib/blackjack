@@ -4,7 +4,7 @@ import org.kevinkib.BlackJackService;
 import org.kevinkib.cards.domain.Card;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
-import org.kevinkib.statistics.business.model.game.Hand;
+import org.kevinkib.statistics.business.model.Hand;
 import org.kevinkib.statistics.infrastructure.entity.PileDB;
 
 import java.util.List;

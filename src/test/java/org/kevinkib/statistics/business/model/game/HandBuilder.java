@@ -1,5 +1,7 @@
 package org.kevinkib.statistics.business.model.game;
 
+import org.kevinkib.statistics.business.model.Hand;
+
 public final class HandBuilder {
     private int score;
     private int nbCards;

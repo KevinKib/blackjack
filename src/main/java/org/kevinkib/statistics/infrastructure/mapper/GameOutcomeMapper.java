@@ -1,6 +1,6 @@
 package org.kevinkib.statistics.infrastructure.mapper;
 
-import org.kevinkib.statistics.business.model.game.GameOutcome;
+import org.kevinkib.statistics.business.model.GameOutcome;
 
 public class GameOutcomeMapper {
 

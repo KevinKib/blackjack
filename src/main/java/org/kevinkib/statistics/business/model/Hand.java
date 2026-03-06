@@ -1,4 +1,4 @@
-package org.kevinkib.statistics.business.model.game;
+package org.kevinkib.statistics.business.model;
 
 public record Hand(int score, int nbCards) {
 

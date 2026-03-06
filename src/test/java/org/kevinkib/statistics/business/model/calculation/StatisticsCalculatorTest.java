@@ -1,19 +1,17 @@
 package org.kevinkib.statistics.business.model.calculation;
 
 import org.junit.jupiter.api.Test;
-import org.kevinkib.statistics.business.model.game.Game;
+import org.kevinkib.statistics.business.model.StatisticsReport;
+import org.kevinkib.statistics.business.model.Game;
 import org.kevinkib.statistics.business.model.game.GameBuilder;
-import org.kevinkib.statistics.business.model.game.GameOutcome;
-import org.kevinkib.statistics.business.model.game.HandBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.kevinkib.statistics.business.model.game.GameBuilder.aGame;
-import static org.kevinkib.statistics.business.model.game.GameOutcome.*;
+import static org.kevinkib.statistics.business.model.GameOutcome.*;
 import static org.kevinkib.statistics.business.model.game.HandBuilder.aHand;
 
 

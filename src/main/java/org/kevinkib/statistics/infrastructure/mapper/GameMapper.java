@@ -1,13 +1,12 @@
 package org.kevinkib.statistics.infrastructure.mapper;
 
-import org.kevinkib.statistics.business.model.game.Game;
-import org.kevinkib.statistics.business.model.game.GameOutcome;
-import org.kevinkib.statistics.business.model.game.Hand;
+import org.kevinkib.statistics.business.model.Game;
+import org.kevinkib.statistics.business.model.GameOutcome;
+import org.kevinkib.statistics.business.model.Hand;
 import org.kevinkib.statistics.infrastructure.entity.GameDB;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class GameMapper {
 
