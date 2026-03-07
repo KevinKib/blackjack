@@ -1,11 +1,11 @@
 package org.kevinkib;
 
-public enum GameState {
+public enum LegacyGameState {
 
     WIN, TIE, LOSE, ONGOING;
 
-    public static GameState from(String stateName) {
-        for (GameState state : GameState.values()) {
+    public static LegacyGameState from(String stateName) {
+        for (LegacyGameState state : LegacyGameState.values()) {
             if (state.name().equals(stateName)) {
                 return state;
             }
