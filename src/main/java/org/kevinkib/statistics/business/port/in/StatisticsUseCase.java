@@ -1,4 +1,4 @@
-package org.kevinkib.statistics.business.port.out;
+package org.kevinkib.statistics.business.port.in;
 
 public interface StatisticsUseCase {
 

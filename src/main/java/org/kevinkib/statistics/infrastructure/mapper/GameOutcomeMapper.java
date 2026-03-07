@@ -11,6 +11,7 @@ public class GameOutcomeMapper {
             case "LOSE" -> GameOutcome.LOSS;
             default -> null;
         };
+
     }
 
 }

@@ -6,4 +6,5 @@ public record Game(
     public boolean isWin() {
         return GameOutcome.WIN.equals(outcome);
     }
+
 }

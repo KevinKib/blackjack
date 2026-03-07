@@ -1,8 +1,8 @@
 package org.kevinkib.statistics.business;
 
 import org.kevinkib.statistics.business.model.Game;
-import org.kevinkib.statistics.business.port.in.GameRepository;
-import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
+import org.kevinkib.statistics.business.port.out.GameRepository;
+import org.kevinkib.statistics.business.port.in.StatisticsUseCase;
 
 import java.util.List;
 
@@ -30,4 +30,5 @@ public class StatisticsService implements StatisticsUseCase {
     private List<Game> retrieveGameList() {
         return gameRepository.getGames();
     }
+
 }

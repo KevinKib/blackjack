@@ -1,9 +1,9 @@
 package org.kevinkib.config;
 
-import org.kevinkib.BlackJackService;
+import org.kevinkib.LegacyBlackJackService;
 import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.statistics.business.StatisticsService;
-import org.kevinkib.statistics.business.port.in.GameRepository;
+import org.kevinkib.statistics.business.port.out.GameRepository;
 import org.kevinkib.statistics.infrastructure.adapter.GameRepositoryH2;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -12,8 +12,12 @@ import org.springframework.context.annotation.Bean;
 public class AppConfig {
 
     @Bean
-    public BlackJackService blackJackService() {
-        return new BlackJackService(BlackJackService.getDataSource(), new FrenchDeckFactory(), statisticsService());
+    public LegacyBlackJackService legacyBlackJackService() {
+        return new LegacyBlackJackService(
+                LegacyBlackJackService.getDataSource(),
+                new FrenchDeckFactory(),
+                statisticsService()
+        );
     }
 
     @Bean
