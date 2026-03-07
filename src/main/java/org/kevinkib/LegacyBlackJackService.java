@@ -175,7 +175,13 @@ public class LegacyBlackJackService {
     }
 
     private void printStatistics() {
-        System.out.println(" Win percentage : " + showPercentage(statistics.getWinPercentage()));
+        List<LegacyGameEntity> gameDBs = getGameList();
+
+        if (!gameDBs.isEmpty()) {
+            Long wonGames = gameDBs.stream().filter(gameDB -> gameDB.state().equals(LegacyGameState.WIN.name())).count();
+            double winRate = (double) wonGames / gameDBs.size() * 100;
+            System.out.println(" Win percentage : "+ showPercentage(winRate));
+        }
     }
 
     public static int calculateScore(Long gameId) {
