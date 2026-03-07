@@ -15,6 +15,7 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -176,8 +177,8 @@ public class LegacyBlackJackService {
 
     private void printStatistics() {
         StatisticsReport report = statistics.getStatisticsReport();
-        System.out.println(" Win percentage : " + report.winRate() + " %");
-        System.out.println(" Blackjack rate (21 in 2 cards): " + report.blackJackRate() + " %");
+        System.out.println(" Win percentage : " + showPercentage(report.winRate()));
+        System.out.println(" Blackjack rate (21 in 2 cards): " + showPercentage(report.blackJackRate()));
     }
 
     public static int calculateScore(Long gameId) {
@@ -472,6 +473,12 @@ public class LegacyBlackJackService {
             case TIE -> System.out.println("It's a tie.");
             default -> System.out.println("Game ended.");
         }
+    }
+
+    private String showPercentage(double percentage) {
+        DecimalFormat df = new DecimalFormat("#.00");
+
+        return df.format(percentage) + " %";
     }
 
     public static HikariDataSource getDataSource() {
