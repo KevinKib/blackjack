@@ -6,7 +6,6 @@ import org.kevinkib.cards.domain.DeckType;
 import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
-import org.kevinkib.config.AppConfig;
 import org.kevinkib.statistics.business.model.StatisticsReport;
 import org.kevinkib.statistics.business.port.in.StatisticsUseCase;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static org.kevinkib.cards.domain.french.FrenchRank.ACE;
+
 public class LegacyBlackJackService {
 
     private Deck deck;
@@ -28,7 +29,7 @@ public class LegacyBlackJackService {
     private final Logger logger = new Logger(false);
     private final JdbcTemplate jdbcTemplate;
     private Long gameId = 0L;
-    private GameState gameState;
+    private LegacyGameState gameState;
 
     public static final String JDBC_URL = "jdbc:h2:file:./src/main/data/demo/resources";
     public static final String JDBC_TEST_URL = "jdbc:h2:file:./src/main/data/test/resources";
@@ -41,12 +42,14 @@ public class LegacyBlackJackService {
     private List<Card> playerCards;
     private List<Card> dealerCards;
 
-    private final StatisticsUseCase statistics = new AppConfig().statisticsService();
+    private final StatisticsUseCase statistics;
 
-    public LegacyBlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory) {
+    public LegacyBlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory,
+                                  StatisticsUseCase statistics) {
         this.deckFactory = deckFactory;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.scanner = new Scanner(System.in);
+        this.statistics = statistics;
     }
 
     public void startGUI() {
@@ -87,7 +90,7 @@ public class LegacyBlackJackService {
                 switch (input) {
 
                     case "1" -> {
-                        GameState state = hit();
+                        LegacyGameState state = hit();
                         if (isGameOver(state)) {
                             printFinalState(state);
                             running = false;
@@ -95,7 +98,7 @@ public class LegacyBlackJackService {
                     }
 
                     case "2" -> {
-                        GameState state = stand();
+                        LegacyGameState state = stand();
                         printFinalState(state);
                         running = false;
                     }
@@ -134,15 +137,32 @@ public class LegacyBlackJackService {
         } while (stillPlay);
     }
 
+    private void createGameInDatabase() {
+        String sql = "INSERT INTO GAME (GAME_CREATION_DATE, GAME_STATE) VALUES (?, ?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setString(2, LegacyGameState.ONGOING.name());
+            return ps;
+        }, keyHolder);
+
+        gameId = keyHolder.getKey().longValue();
+    }
+
     public static int calculateScore(List<Card> cards) {
         int sum = 0;
+
         for (var card : cards) {
-            if (!FrenchRank.ACE.equals(card.getRank())) {
-                sum += ((FrenchRank)card.getRank()).getValue();
+            if (!isAce(card)) {
+                sum += getCardValue(card);
             }
         }
+
         for (var card : cards) {
-            if (FrenchRank.ACE.equals(card.getRank())) {
+            if (isAce(card)) {
                 if (sum + 11 > 21) {
                     sum += 1;
                 }
@@ -154,30 +174,53 @@ public class LegacyBlackJackService {
         return sum;
     }
 
+    private void printStatistics() {
+        StatisticsReport report = statistics.getStatisticsReport();
+        System.out.println(" Win percentage : " + report.winRate() + " %");
+        System.out.println(" Blackjack rate (21 in 2 cards): " + report.blackJackRate() + " %");
+    }
+
     public static int calculateScore(Long gameId) {
 
-        List<CardEntity> cardsEntity = getCardsFromDatabase(gameId);
+        List<LegacyCardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
         List<Card> cards = cardsEntity.stream()
                 .filter(cardEntity -> cardEntity.playerId() != 0L)
                 .map(cardEntity -> new Card(
-                FrenchRank.fromStrength(cardEntity.cardRank()),
-                FrenchSuit.from(cardEntity.cardColor())
-        )).toList();
+                        FrenchRank.fromStrength(cardEntity.cardRank()),
+                        FrenchSuit.from(cardEntity.cardColor())
+                )).toList();
 
         return calculateScore(cards);
     }
 
     public static int calculateNbCards(Long gameId) {
 
-        List<CardEntity> cardsEntity = getCardsFromDatabase(gameId);
+        List<LegacyCardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
         return Math.toIntExact(cardsEntity.stream()
                 .filter(cardEntity -> cardEntity.playerId() != 0L)
                 .count());
     }
 
-    public GameState createGame() {
+
+
+
+
+
+
+
+
+
+
+
+    /*
+     * ===========================================================================
+     * =                                                                         =
+     * ===========================================================================
+     */
+
+    public LegacyGameState createGame() {
         deck = deckFactory.generate(DeckType.FRENCH);
         logger.write("New game");
         createGameInDatabase();
@@ -191,40 +234,25 @@ public class LegacyBlackJackService {
         dealerDraw();
 
         if (isBlackjack(playerCards) && isBlackjack(dealerCards)) {
-            gameState = GameState.TIE;
+            gameState = LegacyGameState.TIE;
         } else if (isBlackjack(playerCards)) {
-            gameState = GameState.WIN;
+            gameState = LegacyGameState.WIN;
         } else if (isBlackjack(dealerCards)) {
-            gameState = GameState.LOSE;
+            gameState = LegacyGameState.LOSE;
         } else {
-            gameState = GameState.ONGOING;
+            gameState = LegacyGameState.ONGOING;
         }
 
         updateGameStateInDatabase();
         return gameState;
     }
 
-    private void createGameInDatabase() {
-        String sql = "INSERT INTO GAME (GAME_CREATION_DATE, GAME_STATE) VALUES (?, ?)";
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
-            ps.setString(2, GameState.ONGOING.name());
-            return ps;
-        }, keyHolder);
-
-        gameId = keyHolder.getKey().longValue();
-    }
-
-    public GameState hit() {
+    public LegacyGameState hit() {
         playerDraw();
 
         if (calculateScore(playerCards) > 21) {
             logger.write("Player exceeded 21 and lost");
-            gameState = GameState.LOSE;
+            gameState = LegacyGameState.LOSE;
             updateGameStateInDatabase();
             return gameState;
         }
@@ -232,26 +260,26 @@ public class LegacyBlackJackService {
         return gameState;
     }
 
-    public GameState stand() {
+    public LegacyGameState stand() {
         logger.write("Player stands.");
 
         dealerDrawUntil17();
 
         if (calculateScore(dealerCards) > 21) {
             logger.write("Dealer exceeded 21. Player wins");
-            gameState = GameState.WIN;
+            gameState = LegacyGameState.WIN;
         }
         else if (calculateScore(dealerCards) > calculateScore(playerCards)) {
             logger.write("Dealer is the closest to 21. Player lost");
-            gameState = GameState.LOSE;
+            gameState = LegacyGameState.LOSE;
         }
         else if (calculateScore(dealerCards) == calculateScore(playerCards)) {
             logger.write("Player and dealer have the same score. Tie");
-            gameState = GameState.TIE;
+            gameState = LegacyGameState.TIE;
         }
         else if (calculateScore(dealerCards) < calculateScore(playerCards)) {
             logger.write("Player is the closest to 21 and wins");
-            gameState = GameState.WIN;
+            gameState = LegacyGameState.WIN;
         }
         else {
             throw new IllegalStateException("Game should be ended if player stands");
@@ -270,9 +298,9 @@ public class LegacyBlackJackService {
         );
     }
 
-    private List<GameEntity> getGameList() {
-        List<GameEntity> gamesDB = jdbcTemplate.query("SELECT * FROM GAME",
-                (rs, rowNum) -> new GameEntity(
+    private List<LegacyGameEntity> getGameList() {
+        List<LegacyGameEntity> gamesDB = jdbcTemplate.query("SELECT * FROM GAME",
+                (rs, rowNum) -> new LegacyGameEntity(
                         rs.getLong("GAME_ID"),
                         rs.getDate("GAME_CREATION_DATE"),
                         rs.getDate("GAME_CREATION_DATE"),
@@ -343,8 +371,8 @@ public class LegacyBlackJackService {
     }
 
     public void loadGame(Long gameId) {
-        GameEntity gameDB = jdbcTemplate.queryForObject("SELECT * FROM GAME WHERE GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new GameEntity(
+        LegacyGameEntity gameDB = jdbcTemplate.queryForObject("SELECT * FROM GAME WHERE GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new LegacyGameEntity(
                         rs.getLong("GAME_ID"),
                         rs.getDate("GAME_CREATION_DATE"),
                         rs.getDate("GAME_CREATION_DATE"),
@@ -353,7 +381,7 @@ public class LegacyBlackJackService {
                         rs.getString("GAME_STATE")
                 ));
 
-        List<CardEntity> pilesDB = getCardsFromDatabase(gameId);
+        List<LegacyCardEntity> pilesDB = getCardsFromDatabase(gameId);
 
         if (gameDB == null) {
             return;
@@ -362,7 +390,7 @@ public class LegacyBlackJackService {
         playerCards = new ArrayList<>();
         dealerCards = new ArrayList<>();
 
-        for (CardEntity cardEntity : pilesDB) {
+        for (LegacyCardEntity cardEntity : pilesDB) {
             if (cardEntity.playerId() == 0L) {
                 dealerCards.add(new Card(
                         FrenchRank.fromStrength(cardEntity.cardRank()),
@@ -388,14 +416,14 @@ public class LegacyBlackJackService {
         logger.write("Loaded game "+gameId);
 
         this.gameId = gameId;
-        gameState = GameState.from(gameDB.state());
+        gameState = LegacyGameState.from(gameDB.state());
     }
 
-    private static List<CardEntity> getCardsFromDatabase(Long gameId) {
+    private static List<LegacyCardEntity> getCardsFromDatabase(Long gameId) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-        List<CardEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new CardEntity(
+        List<LegacyCardEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new LegacyCardEntity(
                         rs.getLong("PILE_ID"),
                         rs.getInt("PILE_PLAYER_ID"),
                         rs.getInt("PILE_CARD_RANK"),
@@ -404,29 +432,31 @@ public class LegacyBlackJackService {
         return pilesDB;
     }
 
-    private void printStatistics() {
-        StatisticsReport report = statistics.getStatisticsReport();
-        System.out.println(" Win percentage : " + report.winRate() + " %");
-        System.out.println(" Blackjack rate (21 in 2 cards): " + report.blackJackRate() + " %");
-    }
-
     private void printScores() {
         System.out.println("\n--- Current Scores ---");
         System.out.println("Player: " + getPlayerScore());
         System.out.println("Dealer: " + getDealerScore());
     }
 
-    private boolean isGameOver(GameState state) {
-        return state == GameState.WIN
-                || state == GameState.LOSE
-                || state == GameState.TIE;
+    private boolean isGameOver(LegacyGameState state) {
+        return state == LegacyGameState.WIN
+                || state == LegacyGameState.LOSE
+                || state == LegacyGameState.TIE;
     }
 
     private boolean isBlackjack(List<Card> cards) {
         return calculateScore(cards) == 21 && cards.size() == 2;
     }
 
-    private void printFinalState(GameState state) {
+    private static boolean isAce(Card card) {
+        return ACE.equals(card.getRank());
+    }
+
+    private static Integer getCardValue(Card card) {
+        return ((FrenchRank) card.getRank()).getValue();
+    }
+
+    private void printFinalState(LegacyGameState state) {
 
         printScores();
 
