@@ -2,7 +2,7 @@ package org.kevinkib.statistics.infrastructure.adapter;
 
 import org.kevinkib.BlackJackService;
 import org.kevinkib.statistics.business.model.Game;
-import org.kevinkib.statistics.business.port.in.GameRepository;
+import org.kevinkib.statistics.business.port.out.GameRepository;
 import org.kevinkib.statistics.infrastructure.entity.GameDB;
 import org.kevinkib.statistics.infrastructure.mapper.GameMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
