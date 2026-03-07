@@ -1,5 +1,6 @@
 package org.kevinkib;
 
+import jakarta.annotation.Nonnull;
 import org.kevinkib.cards.domain.Card;
 import org.kevinkib.cards.domain.Deck;
 import org.kevinkib.cards.domain.DeckType;
@@ -152,6 +153,29 @@ public class LegacyBlackJackService {
             }
         }
         return sum;
+    }
+
+    public static int calculateScore(Long gameId) {
+
+        List<PileEntity> cardsEntity = getCardsFromDatabase(gameId);
+
+        List<Card> cards = cardsEntity.stream()
+                .filter(cardEntity -> cardEntity.playerId() != 0L)
+                .map(cardEntity -> new Card(
+                FrenchRank.fromStrength(cardEntity.cardRank()),
+                FrenchSuit.from(cardEntity.cardColor())
+        )).toList();
+
+        return calculateScore(cards);
+    }
+
+    public static int calculateNbCards(Long gameId) {
+
+        List<PileEntity> cardsEntity = getCardsFromDatabase(gameId);
+
+        return Math.toIntExact(cardsEntity.stream()
+                .filter(cardEntity -> cardEntity.playerId() != 0L)
+                .count());
     }
 
     public GameState createGame() {
@@ -330,13 +354,7 @@ public class LegacyBlackJackService {
                         rs.getString("GAME_STATE")
                 ));
 
-        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new PileEntity(
-                        rs.getLong("PILE_ID"),
-                        rs.getInt("PILE_PLAYER_ID"),
-                        rs.getInt("PILE_CARD_RANK"),
-                        rs.getString("PILE_CARD_COLOR")
-                ));
+        List<PileEntity> pilesDB = getCardsFromDatabase(gameId);
 
         if (gameDB == null) {
             return;
@@ -372,6 +390,19 @@ public class LegacyBlackJackService {
 
         this.gameId = gameId;
         gameState = GameState.from(gameDB.state());
+    }
+
+    private static List<PileEntity> getCardsFromDatabase(Long gameId) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new PileEntity(
+                        rs.getLong("PILE_ID"),
+                        rs.getInt("PILE_PLAYER_ID"),
+                        rs.getInt("PILE_CARD_RANK"),
+                        rs.getString("PILE_CARD_COLOR")
+                ));
+        return pilesDB;
     }
 
     private void printStatistics() {
