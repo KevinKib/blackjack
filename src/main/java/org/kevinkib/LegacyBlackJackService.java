@@ -1,6 +1,5 @@
 package org.kevinkib;
 
-import jakarta.annotation.Nonnull;
 import org.kevinkib.cards.domain.Card;
 import org.kevinkib.cards.domain.Deck;
 import org.kevinkib.cards.domain.DeckType;
@@ -157,7 +156,7 @@ public class LegacyBlackJackService {
 
     public static int calculateScore(Long gameId) {
 
-        List<PileEntity> cardsEntity = getCardsFromDatabase(gameId);
+        List<CardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
         List<Card> cards = cardsEntity.stream()
                 .filter(cardEntity -> cardEntity.playerId() != 0L)
@@ -171,7 +170,7 @@ public class LegacyBlackJackService {
 
     public static int calculateNbCards(Long gameId) {
 
-        List<PileEntity> cardsEntity = getCardsFromDatabase(gameId);
+        List<CardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
         return Math.toIntExact(cardsEntity.stream()
                 .filter(cardEntity -> cardEntity.playerId() != 0L)
@@ -354,7 +353,7 @@ public class LegacyBlackJackService {
                         rs.getString("GAME_STATE")
                 ));
 
-        List<PileEntity> pilesDB = getCardsFromDatabase(gameId);
+        List<CardEntity> pilesDB = getCardsFromDatabase(gameId);
 
         if (gameDB == null) {
             return;
@@ -363,17 +362,17 @@ public class LegacyBlackJackService {
         playerCards = new ArrayList<>();
         dealerCards = new ArrayList<>();
 
-        for (PileEntity pileEntity : pilesDB) {
-            if (pileEntity.playerId() == 0L) {
+        for (CardEntity cardEntity : pilesDB) {
+            if (cardEntity.playerId() == 0L) {
                 dealerCards.add(new Card(
-                        FrenchRank.fromStrength(pileEntity.cardRank()),
-                        FrenchSuit.from(pileEntity.cardColor())
+                        FrenchRank.fromStrength(cardEntity.cardRank()),
+                        FrenchSuit.from(cardEntity.cardColor())
                 ));
             }
             else {
                 playerCards.add(new Card(
-                        FrenchRank.fromStrength(pileEntity.cardRank()),
-                        FrenchSuit.from(pileEntity.cardColor())
+                        FrenchRank.fromStrength(cardEntity.cardRank()),
+                        FrenchSuit.from(cardEntity.cardColor())
                 ));
             }
         }
@@ -392,11 +391,11 @@ public class LegacyBlackJackService {
         gameState = GameState.from(gameDB.state());
     }
 
-    private static List<PileEntity> getCardsFromDatabase(Long gameId) {
+    private static List<CardEntity> getCardsFromDatabase(Long gameId) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-        List<PileEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
-                (rs, rowNum) -> new PileEntity(
+        List<CardEntity> pilesDB = jdbcTemplate.query("SELECT * FROM PILE WHERE PILE_FK_GAME_ID = ?", new Object[]{gameId},
+                (rs, rowNum) -> new CardEntity(
                         rs.getLong("PILE_ID"),
                         rs.getInt("PILE_PLAYER_ID"),
                         rs.getInt("PILE_CARD_RANK"),
