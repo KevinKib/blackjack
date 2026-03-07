@@ -1,6 +1,6 @@
 package org.kevinkib.statistics.infrastructure.entity;
 
-public record PileDB(
+public record CardDB(
         long id,
         long gameId,
         int cardRank,

@@ -1,11 +1,11 @@
 package org.kevinkib.statistics.infrastructure.mapper;
 
-import org.kevinkib.BlackJackService;
+import jakarta.annotation.Nonnull;
+import org.kevinkib.LegacyBlackJackService;
 import org.kevinkib.cards.domain.Card;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
-import org.kevinkib.statistics.business.model.Hand;
-import org.kevinkib.statistics.infrastructure.entity.PileDB;
+import org.kevinkib.statistics.infrastructure.entity.CardDB;
 
 import java.util.List;
 import java.util.Map;
@@ -13,23 +13,26 @@ import java.util.stream.Collectors;
 
 public class HandMapper {
 
-    public static Hand mapGamePileToHand(List<PileDB> pilesDB) {
+    public static Hand mapGamePileToHand(List<CardDB> pilesDB) {
 
-        List<Card> cards = pilesDB.stream().map(pileDB -> new Card(
-                FrenchRank.fromStrength(pileDB.cardRank()),
-                FrenchSuit.from(pileDB.cardColor()))
-        ).toList();
+        List<Card> cards = getCards(pilesDB);
 
-        int score = BlackJackService.calculateScore(cards);
-        int nbCards = pilesDB.size();
+        int score = LegacyBlackJackService.calculateScore(cards);
 
-        return new Hand(score, nbCards);
+        return new Hand(score, pilesDB.size());
     }
 
-    public static Map<Long, Hand> mapPilesFromDifferentGames(List<PileDB> pilesDB) {
+
+
+
+
+
+
+
+    public static Map<Long, Hand> mapPilesFromDifferentGames(List<CardDB> pilesDB) {
 
         Map<Long, Hand> hands = pilesDB.stream()
-                .collect(Collectors.groupingBy(PileDB::gameId))
+                .collect(Collectors.groupingBy(CardDB::gameId))
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
@@ -38,6 +41,15 @@ public class HandMapper {
                 ));
 
         return hands;
+    }
+
+    @Nonnull
+    private static List<Card> getCards(List<CardDB> pilesDB) {
+        List<Card> cards = pilesDB.stream().map(cardDB -> new Card(
+                FrenchRank.fromStrength(cardDB.cardRank()),
+                FrenchSuit.from(cardDB.cardColor()))
+        ).toList();
+        return cards;
     }
 
 }

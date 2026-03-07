@@ -8,7 +8,7 @@ import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
 import org.kevinkib.config.AppConfig;
 import org.kevinkib.statistics.business.model.StatisticsReport;
-import org.kevinkib.statistics.business.port.out.StatisticsUseCase;
+import org.kevinkib.statistics.business.port.in.StatisticsUseCase;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class BlackJackService {
+public class LegacyBlackJackService {
 
     private Deck deck;
     private FrenchDeckFactory deckFactory;
@@ -43,7 +43,7 @@ public class BlackJackService {
 
     private final StatisticsUseCase statistics = new AppConfig().statisticsService();
 
-    public BlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory) {
+    public LegacyBlackJackService(HikariDataSource dataSource, FrenchDeckFactory deckFactory) {
         this.deckFactory = deckFactory;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.scanner = new Scanner(System.in);
@@ -377,9 +377,7 @@ public class BlackJackService {
     private void printStatistics() {
         StatisticsReport report = statistics.getStatisticsReport();
         System.out.println(" Win percentage : " + report.winRate() + " %");
-        System.out.println(" Average player score : " + report.average() + " %");
         System.out.println(" Blackjack rate (21 in 2 cards): " + report.blackJackRate() + " %");
-        System.out.println(" Bust rate (>21): " + report.bustRate() + " %");
     }
 
     private void printScores() {

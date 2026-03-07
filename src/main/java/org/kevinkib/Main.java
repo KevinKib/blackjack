@@ -4,6 +4,6 @@ import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 
 public class Main {
     public static void main(String[] args) {
-        new BlackJackService(BlackJackService.getDataSource(), new FrenchDeckFactory()).startGUI();
+        new LegacyBlackJackService(LegacyBlackJackService.getDataSource(), new FrenchDeckFactory()).startGUI();
     }
 }
