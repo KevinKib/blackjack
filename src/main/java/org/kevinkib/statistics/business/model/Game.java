@@ -9,8 +9,6 @@ public record Game(
         return GameOutcome.WIN.equals(outcome);
     }
 
-    public boolean isBlackjack() {
-        return playerScore == 21 && playerNbCards == 2;
-    }
+
 
 }
