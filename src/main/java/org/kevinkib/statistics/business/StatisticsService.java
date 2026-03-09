@@ -24,10 +24,6 @@ public class StatisticsService implements StatisticsUseCase {
         return new StatisticsReport(winRate, blackJackRate);
     }
 
-    private List<Game> retrieveGameList() {
-        return gameRepository.getGames();
-    }
-
     private double computeWinRate(List<Game> games) {
         long nbWonGames = games.stream().filter(Game::isWin).count();
         return percentage(nbWonGames, games.size());
@@ -36,6 +32,10 @@ public class StatisticsService implements StatisticsUseCase {
     private double computeBlackJackRate(List<Game> games) {
         long nbBlackJacks = games.stream().filter(Game::isBlackjack).count();
         return percentage(nbBlackJacks, games.size());
+    }
+
+    private List<Game> retrieveGameList() {
+        return gameRepository.getGames();
     }
 
     private double percentage(long nbWonGames, long nbGames) {
