@@ -418,6 +418,8 @@ public class LegacyBlackJackService {
 
         this.gameId = gameId;
         gameState = LegacyGameState.from(gameDB.state());
+
+        calculateScore(gameId);
     }
 
     private static List<LegacyCardEntity> getCardsFromDatabase(Long gameId) {
