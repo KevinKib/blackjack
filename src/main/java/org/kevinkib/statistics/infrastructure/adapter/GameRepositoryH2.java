@@ -17,6 +17,14 @@ public class GameRepositoryH2 implements GameRepository {
         this.jdbcTemplate = new JdbcTemplate(LegacyBlackJackService.getDataSource());
     }
 
+    public List<Game> getGames() {
+        List<GameDB> gameDBList = jdbcTemplate.query("SELECT * FROM GAME", new Object[]{},
+                (rs, rowNum) -> new GameDB(
+                        rs.getLong("GAME_ID"),
+                        rs.getString("GAME_STATE")
+                ));
 
+        return GameMapper.mapToDomain(gameDBList);
+    }
 
 }
