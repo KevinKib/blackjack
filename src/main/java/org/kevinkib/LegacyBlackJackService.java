@@ -184,7 +184,7 @@ public class LegacyBlackJackService {
         }
     }
 
-    public static int calculateScore(Long gameId) {
+    public static int calculatePlayerScore(Long gameId) {
 
         List<LegacyCardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
@@ -198,7 +198,7 @@ public class LegacyBlackJackService {
         return calculateScore(cards);
     }
 
-    public static int calculateNbCards(Long gameId) {
+    public static int calculatePlayerNbCards(Long gameId) {
 
         List<LegacyCardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
@@ -422,7 +422,8 @@ public class LegacyBlackJackService {
         this.gameId = gameId;
         gameState = LegacyGameState.from(gameDB.state());
 
-        calculateScore(gameId);
+        calculatePlayerScore(gameId);
+        calculatePlayerNbCards(gameId);
     }
 
     private static List<LegacyCardEntity> getCardsFromDatabase(Long gameId) {
