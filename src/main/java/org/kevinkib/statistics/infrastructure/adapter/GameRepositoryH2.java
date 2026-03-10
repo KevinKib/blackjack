@@ -21,7 +21,6 @@ public class  GameRepositoryH2 implements GameRepository {
     public List<Game> getGames() {
         List<GameDB> gameDBList = jdbcTemplate.query("SELECT * FROM GAME", new Object[]{},
                 (rs, rowNum) -> new GameDB(
-                        rs.getLong("GAME_ID"),
                         rs.getString("GAME_STATE")
                 ));
 
