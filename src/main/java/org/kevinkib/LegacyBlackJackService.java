@@ -6,7 +6,6 @@ import org.kevinkib.cards.domain.DeckType;
 import org.kevinkib.cards.domain.french.FrenchDeckFactory;
 import org.kevinkib.cards.domain.french.FrenchRank;
 import org.kevinkib.cards.domain.french.FrenchSuit;
-import org.kevinkib.statistics.business.model.StatisticsReport;
 import org.kevinkib.statistics.business.port.in.StatisticsUseCase;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.zaxxer.hikari.HikariDataSource;
@@ -179,7 +178,7 @@ public class LegacyBlackJackService {
         System.out.println(" Win percentage : " + showPercentage(statistics.getStatisticsReport().winRate()));
     }
 
-    public static int calculateScore(Long gameId) {
+    public static int calculatePlayerScore(Long gameId) {
 
         List<LegacyCardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
@@ -193,7 +192,7 @@ public class LegacyBlackJackService {
         return calculateScore(cards);
     }
 
-    public static int calculateNbCards(Long gameId) {
+    public static int calculatePlayerNbCards(Long gameId) {
 
         List<LegacyCardEntity> cardsEntity = getCardsFromDatabase(gameId);
 
@@ -417,7 +416,7 @@ public class LegacyBlackJackService {
         this.gameId = gameId;
         gameState = LegacyGameState.from(gameDB.state());
 
-        calculateScore(gameId);
+        calculatePlayerScore(gameId);
     }
 
     private static List<LegacyCardEntity> getCardsFromDatabase(Long gameId) {
