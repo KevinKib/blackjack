@@ -176,9 +176,7 @@ public class LegacyBlackJackService {
     }
 
     private void printStatistics() {
-        StatisticsReport report = statistics.getStatisticsReport();
-        System.out.println(" Win percentage : " + showPercentage(report.winRate()));
-        System.out.println(" Blackjack rate (21 in 2 cards): " + showPercentage(report.blackJackRate()));
+        System.out.println(" Win percentage : " + showPercentage(statistics.getStatisticsReport().winRate()));
     }
 
     public static int calculateScore(Long gameId) {
