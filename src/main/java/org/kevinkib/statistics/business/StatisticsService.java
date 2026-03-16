@@ -23,9 +23,15 @@ public class StatisticsService implements StatisticsUseCase {
         return winRate;
     }
 
+
     private double computeWinRate(List<Game> games) {
         long nbWonGames = games.stream().filter(Game::isWin).count();
         return percentage(nbWonGames, games.size());
+    }
+
+    private double computeBlackJackRate(List<Game> games) {
+        long nbBlackJacks = games.stream().filter(Game::isPlayerBlackjack).count();
+        return percentage(nbBlackJacks, games.size());
     }
 
     private List<Game> retrieveGameList() {
